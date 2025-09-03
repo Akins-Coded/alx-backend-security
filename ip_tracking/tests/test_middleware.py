@@ -34,3 +34,17 @@ class IPTrackingMiddlewareTest(TestCase):
         self.assertIsNotNone(cached_geo)
         self.assertIn("country", cached_geo)
         self.assertIn("city", cached_geo)
+
+class RateLimitTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_rate_limit(self):
+        url = "/login/"
+        for i in range(5):  # 5 allowed requests
+            response = self.client.post(url)
+            self.assertEqual(response.status_code, 200)
+
+        # 6th request should fail
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 429)

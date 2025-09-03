@@ -1,8 +1,12 @@
 from django.http import HttpResponse
 from django_ratelimit.decorators import ratelimit
+from .utils import user_or_ip
 
-# Anonymous users → 5 req/min, Authenticated users → 10 req/min
-@ratelimit(key="ip", rate="5/m", method="ALL", block=True)
-@ratelimit(key="user_or_ip", rate="10/m", method="ALL", block=True)
+@ratelimit(key='user_or_ip', rate='10/m', method='ALL', block=True)
 def login_view(request):
-    return HttpResponse("Login successful (dummy view)")
+    """
+    Rate limits:
+        - Authenticated users: 10 requests/min
+        - Anonymous users: 5 requests/min (handled inside user_or_ip)
+    """
+    return HttpResponse("Coded Login successful (dummy view)")

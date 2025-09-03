@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from django.core.management.utils import get_random_secret_key
 import environ
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -48,20 +49,27 @@ INSTALLED_APPS = [
 
     # Apps
     'ip_tracking',
+
+    "django_ratelimit",
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    # Fix this line:
+    "django_ratelimit.middleware.RatelimitMiddleware",
+
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-     # Custom IP tracking middleware
+    # Custom IP tracking middleware
     "ip_tracking.middleware.IPTrackingMiddleware",
 ]
+
 
 ROOT_URLCONF = 'alx_backend_security.urls'
 
@@ -137,18 +145,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-ip-tracking",
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # DB 1 for app cache
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 
-def user_or_ip(group, request):
-    if request.user.is_authenticated:
-        return str(request.user.id)
-    return request.META.get("REMOTE_ADDR")
-
-# settings.py
-
-# django-ratelimit configuration
-
+# Tell django-ratelimit which cache to use
 RATELIMIT_USE_CACHE = "default"
