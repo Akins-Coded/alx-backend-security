@@ -28,7 +28,7 @@ IPINFO_TOKEN = env("IPINFO_TOKEN")  # <--- secure access token
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = 'django-insecure-+&amp;h0v1z8k3y#(u$y@!l9v1e^m#(z7q8w3e4r5t6y7u8i9o0p'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
