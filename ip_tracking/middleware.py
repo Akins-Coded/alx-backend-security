@@ -1,7 +1,8 @@
 import logging
+from django.http import HttpResponseForbidden
 from django.utils.timezone import now
-from .models import RequestLog
-from ipware import get_client_ip 
+from .models import RequestLog, BlockedIP
+from ipware import get_client_ip
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,11 @@ class IPTrackingMiddleware:
         # Get client IP
         ip, is_routable = get_client_ip(request)
         ip_address = ip if ip else "0.0.0.0" # Avoid failing
+
+
+         # Check blacklist
+        if BlockedIP.objects.filter(ip_address=ip_address).exists():
+            return HttpResponseForbidden("Forbidden: Your IP has been blocked.")
 
         # Save request details
         RequestLog.objects.create(
