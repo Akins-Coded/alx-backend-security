@@ -141,3 +141,14 @@ CACHES = {
         "LOCATION": "unique-ip-tracking",
     }
 }
+
+def user_or_ip(group, request):
+    if request.user.is_authenticated:
+        return str(request.user.id)
+    return request.META.get("REMOTE_ADDR")
+
+# settings.py
+
+# django-ratelimit configuration
+
+RATELIMIT_USE_CACHE = "default"
