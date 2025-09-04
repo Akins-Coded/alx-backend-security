@@ -8,11 +8,11 @@ SENSITIVE_PATHS = ["/admin", "/login"]
 @shared_task
 def detect_suspicious_ips():
     """
-    Celery task to detect suspicious IPs from Redis logs.
-    Runs hourly.
+    Celery task to detect suspicious IPs from Redis logs
+    and store them in SuspiciousIP.
     """
-    # Keys set by middleware look like: ip:{ip}
-    keys = cache.keys("ip:*")
+    keys = cache.keys("ip:*")  # e.g. ip:127.0.0.1
+    flagged = 0
 
     for key in keys:
         ip_data = cache.get(key)
@@ -29,7 +29,7 @@ def detect_suspicious_ips():
         if count > 100:
             reasons.append(f"Excessive requests: {count} in last hour")
 
-        # Rule 2: Accessing sensitive paths
+        # Rule 2: Sensitive paths
         for path in paths:
             if any(path.startswith(sp) for sp in SENSITIVE_PATHS):
                 reasons.append(f"Accessed sensitive path: {path}")
@@ -39,6 +39,8 @@ def detect_suspicious_ips():
             SuspiciousIP.objects.get_or_create(
                 ip_address=ip_address,
                 reason=reason,
+                defaults={"flagged_at": timezone.now()},
             )
+            flagged += 1
 
-    return f"Checked {len(keys)} IPs at {timezone.now()}"
+    return f"Checked {len(keys)} IPs, flagged {flagged} suspicious at {timezone.now()}"
